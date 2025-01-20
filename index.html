@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-Lab Inventory Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-image">
+            <img src="header-elab.png" alt="Inventory Management">
+        </div>
+        <h1>e-Lab Inventory Management</h1>
+
+        <!-- Navigation Menu -->
+        <nav id="main-menu">
+            <button data-target="dashboard-section">Dashboard</button>
+            <button data-target="add-stock-section">Add Stock</button>
+            <button data-target="use-stock-section">Use Stock</button>
+            <button data-target="low-stock-section">Low Stock Items</button>
+        </nav>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="hidden">
+            <h2>Stock Dashboard</h2>
+            <label for="dashboard-category-filter">Filter by Category:</label>
+            <select id="dashboard-category-filter">
+                <option value="all">All Categories</option>
+            </select>
+            <table id="stock-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Min Threshold</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Add Stock Section -->
+        <section id="add-stock-section" class="hidden">
+            <h2>Add Stock</h2>
+            <form id="add-stock-form">
+                <input type="text" id="name" placeholder="Item Name" required>
+                <select id="existing-category">
+                    <option value="" disabled selected>Select Existing Category</option>
+                </select>
+                <input type="text" id="new-category" placeholder="Or Create New Category">
+                <input type="number" id="quantity" placeholder="Quantity" required>
+                <input type="number" id="min-threshold" placeholder="Min Threshold" required>
+                <button type="submit">Add Stock</button>
+            </form>
+        </section>
+
+        <!-- Use Stock Section -->
+        <section id="use-stock-section" class="hidden">
+            <h2>Use Stock</h2>
+            <label for="use-stock-category-filter">Filter by Category:</label>
+            <select id="use-stock-category-filter">
+                <option value="all">All Categories</option>
+            </select>
+            <form id="use-stock-form">
+                <select id="use-stock-dropdown" required>
+                    <option value="" disabled selected>Select Stock</option>
+                </select>
+                <input type="number" id="use-quantity" placeholder="Quantity to Use" required>
+                <button type="submit">Use Stock</button>
+            </form>
+        </section>
+
+        <!-- Low Stock Items Section -->
+        <section id="low-stock-section" class="hidden">
+            <h2>Low Stock Items</h2>
+            <button id="check-low-stock">Check Low Stock</button>
+            <ul id="low-stock-list"></ul>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
