@@ -135,7 +135,7 @@ def get_categories():
     categories = Stock.query.with_entities(Stock.category).distinct().all()
     category_list = [category[0] for category in categories if category[0]]  # Extract non-empty categories
     return jsonify(category_list)
-    
+
 @app.route('/run_migrations', methods=['GET'])
 def run_migrations():
     try:
@@ -143,6 +143,29 @@ def run_migrations():
         return jsonify({"message": "Database migrations completed successfully!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# Search stock items by name or category
+@app.route('/search_stock', methods=['GET'])
+def search_stock():
+    query = request.args.get('query', '').strip().lower()
+    if not query:
+        return jsonify([]), 200
+
+    # Search by name or category (case insensitive)
+    search_results = Stock.query.filter(
+        (Stock.name.ilike(f"%{query}%")) | (Stock.category.ilike(f"%{query}%"))
+    ).all()
+
+    result = [
+        {
+            'id': item.id,
+            'name': item.name,
+            'category': item.category,
+            'quantity': item.quantity,
+            'min_threshold': item.min_threshold
+        } for item in search_results
+    ]
+    return jsonify(result), 200
 
 
 if __name__ == '__main__':

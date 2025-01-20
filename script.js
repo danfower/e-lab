@@ -80,31 +80,65 @@ function addStock(stock) {
         .catch((error) => console.error("Error:", error));
 }
 
-// Load the Stock Dashboard
+// Load Stock Dashboard with Search
 function loadStockDashboard() {
+    content.innerHTML = `
+        <h2>Stock Dashboard</h2>
+        <div id="search-bar">
+            <input type="text" id="search-query" placeholder="Search by name or category">
+            <button onclick="searchStock()">Search</button>
+            <button onclick="loadStockDashboard()">Reset</button>
+        </div>
+        <div id="stock-list"></div>
+    `;
+
     fetch(`${API_BASE_URL}/get_stock`)
         .then((response) => response.json())
         .then((data) => {
-            const content = document.getElementById("content");
-            content.innerHTML = `<h2>Stock Dashboard</h2>`;
-            if (data.length === 0) {
-                content.innerHTML += "<p>No stock items available.</p>";
-                return;
-            }
-            data.forEach((item) => {
-                content.innerHTML += `
-                    <div class="stock-item">
-                        <p><strong>${item.name}</strong></p>
-                        <p>Category: ${item.category || "N/A"}</p>
-                        <p>Quantity: ${item.quantity}</p>
-                        <p>Min Threshold: ${item.min_threshold}</p>
-                        <button onclick="deleteStock(${item.id})">Delete</button>
-                    </div>
-                `;
-            });
+            displayStockItems(data);
         })
         .catch((error) => console.error("Error:", error));
 }
+
+// Display stock items dynamically
+function displayStockItems(data) {
+    const stockList = document.getElementById("stock-list");
+    stockList.innerHTML = ""; // Clear previous content
+
+    if (data.length === 0) {
+        stockList.innerHTML = "<p>No stock items available.</p>";
+        return;
+    }
+
+    data.forEach((item) => {
+        stockList.innerHTML += `
+            <div class="stock-item">
+                <p><strong>${item.name}</strong></p>
+                <p>Category: ${item.category || "N/A"}</p>
+                <p>Quantity: ${item.quantity}</p>
+                <p>Min Threshold: ${item.min_threshold}</p>
+                <button onclick="deleteStock(${item.id})">Delete</button>
+            </div>
+        `;
+    });
+}
+
+// Search stock records
+function searchStock() {
+    const query = document.getElementById("search-query").value.trim();
+    if (!query) {
+        alert("Please enter a search term.");
+        return;
+    }
+
+    fetch(`${API_BASE_URL}/search_stock?query=${encodeURIComponent(query)}`)
+        .then((response) => response.json())
+        .then((data) => {
+            displayStockItems(data);
+        })
+        .catch((error) => console.error("Error:", error));
+}
+
 
 function showUseStockForm() {
     // Fetch categories first
