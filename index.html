@@ -13,29 +13,28 @@
     </header>
     <main>
         <div id="menu">
-            <h2>Menu</h2>
-            <button id="add-stock-btn">Add Stock</button>
             <button id="stock-dashboard-btn">Stock Dashboard</button>
+            <button id="add-stock-btn">Add Stock</button>
+            <button id="use-stock-btn">Use Stock</button>
             <button id="low-stock-btn">Low Stock Items</button>
         </div>
         <div id="content">
             <!-- Dynamic content will be loaded here -->
+            <p>Welcome to the e-Lab Inventory Management System. Use the menu to navigate.</p>
         </div>
     </main>
-    <footer>
-        <p>&copy; 2025 Inventory Management System</p>
-    </footer>
     <script>
         // Initialize the API base URL
-        const API_BASE_URL = "https:/e-lab.onrender.com"; // Replace with your backend URL
+        const API_BASE_URL = "https://e-lab.onrender.com"; // Replace with your backend URL
 
-        // Elements
+        // Get references to buttons and content area
         const content = document.getElementById("content");
-        const addStockBtn = document.getElementById("add-stock-btn");
         const stockDashboardBtn = document.getElementById("stock-dashboard-btn");
+        const addStockBtn = document.getElementById("add-stock-btn");
+        const useStockBtn = document.getElementById("use-stock-btn");
         const lowStockBtn = document.getElementById("low-stock-btn");
 
-        // Show the Add Stock form
+        // Show Add Stock Form
         function showAddStockForm() {
             content.innerHTML = `
                 <h2>Add Stock</h2>
@@ -52,8 +51,7 @@
                 </form>
             `;
 
-            const addStockForm = document.getElementById("add-stock-form");
-            addStockForm.onsubmit = (e) => {
+            document.getElementById("add-stock-form").onsubmit = (e) => {
                 e.preventDefault();
                 const name = document.getElementById("name").value;
                 const category = document.getElementById("category").value;
@@ -76,7 +74,7 @@
                 .catch((error) => console.error("Error:", error));
         }
 
-        // Load the Stock Dashboard
+        // Load Stock Dashboard
         function loadStockDashboard() {
             fetch(`${API_BASE_URL}/get_stock`)
                 .then((response) => response.json())
@@ -103,14 +101,51 @@
                 .catch((error) => console.error("Error:", error));
         }
 
-        // Use Stock API Call
-        function useStock(stockId) {
-            const quantity = prompt("Enter quantity to use:");
-            if (quantity && parseInt(quantity, 10) > 0) {
+        // Use Stock Functionality
+        function showUseStockForm() {
+            fetch(`${API_BASE_URL}/get_stock`)
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.length === 0) {
+                        content.innerHTML = "<h2>Use Stock</h2><p>No stock items available to use.</p>";
+                        return;
+                    }
+
+                    content.innerHTML = `
+                        <h2>Use Stock</h2>
+                        <form id="use-stock-form">
+                            <label for="stock-select">Select Stock Item:</label>
+                            <select id="stock-select" required>
+                                ${data
+                                    .map(
+                                        (item) =>
+                                            `<option value="${item.id}">${item.name} (Available: ${item.quantity})</option>`
+                                    )
+                                    .join("")}
+                            </select>
+                            <label for="quantity">Quantity to Use:</label>
+                            <input type="number" id="quantity" required>
+                            <button type="submit">Use Stock</button>
+                        </form>
+                    `;
+
+                    document.getElementById("use-stock-form").onsubmit = (e) => {
+                        e.preventDefault();
+                        const stockId = document.getElementById("stock-select").value;
+                        const quantity = parseInt(document.getElementById("quantity").value, 10);
+
+                        useStock(stockId, quantity);
+                    };
+                })
+                .catch((error) => console.error("Error:", error));
+        }
+
+        function useStock(stockId, quantity) {
+            if (quantity > 0) {
                 fetch(`${API_BASE_URL}/use_stock/${stockId}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ quantity: parseInt(quantity, 10) }),
+                    body: JSON.stringify({ quantity }),
                 })
                     .then((response) => response.json())
                     .then((data) => {
@@ -119,7 +154,7 @@
                     })
                     .catch((error) => console.error("Error:", error));
             } else {
-                alert("Invalid quantity.");
+                alert("Please enter a valid quantity.");
             }
         }
 
@@ -162,9 +197,10 @@
                 .catch((error) => console.error("Error:", error));
         }
 
-        // Event Listeners for Menu Buttons
-        addStockBtn.addEventListener("click", showAddStockForm);
+        // Add Event Listeners
         stockDashboardBtn.addEventListener("click", loadStockDashboard);
+        addStockBtn.addEventListener("click", showAddStockForm);
+        useStockBtn.addEventListener("click", showUseStockForm);
         lowStockBtn.addEventListener("click", loadLowStock);
     </script>
 </body>

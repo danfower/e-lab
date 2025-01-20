@@ -9,15 +9,15 @@ body {
 
 /* Header styles */
 header {
-    background-color: #7cd2b3;
-    color: white;
+    background-color: #ffffff;
+    color: #7cd2b3;
     padding: 20px;
     position: relative;
     text-align: center;
 }
 
 header img {
-    max-width: 100px; /* Limit the size of the header image */
+    max-width: 250px; /* Limit the size of the header image */
     height: auto;
     margin-bottom: 10px;
 }
@@ -73,4 +73,26 @@ button:hover {
 
 .stock-item button:hover {
     background-color: #ff4c4c;
+}
+#menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+#menu button {
+    width: 200px;
+    padding: 10px;
+    background-color: #7cd2b3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#menu button:hover {
+    background-color: #7a99a6;
 }
