@@ -1,4 +1,5 @@
-const API_BASE_URL = "http://127.0.0.1:5000";
+const API_BASE_URL = "https://e-lab.onrender.com/";
+
 
 // Handle navigation
 document.querySelectorAll("#main-menu button").forEach(button => {
