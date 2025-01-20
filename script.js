@@ -1,27 +1,36 @@
 const API_BASE_URL = "https://e-lab.onrender.com/";
 
-// Show the Add Stock form
 function showAddStockForm() {
-    const content = document.getElementById("content");
     content.innerHTML = `
         <h2>Add Stock</h2>
         <form id="add-stock-form">
-            <input type="text" id="name" placeholder="Stock Name" required>
-            <input type="text" id="category" placeholder="Category">
-            <input type="number" id="quantity" placeholder="Quantity" required>
-            <input type="number" id="min_threshold" placeholder="Min Threshold" required>
+            <label for="name">Stock Name:</label>
+            <input type="text" id="name" required>
+
+            <label for="category">Category:</label>
+            <input type="text" id="category">
+
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" required>
+
+            <label for="min-threshold">Minimum Threshold:</label>
+            <input type="number" id="min-threshold" required>
+
             <button type="submit">Add Stock</button>
         </form>
     `;
-    document.getElementById("add-stock-form").onsubmit = function (e) {
+
+    document.getElementById("add-stock-form").onsubmit = (e) => {
         e.preventDefault();
         const name = document.getElementById("name").value;
         const category = document.getElementById("category").value;
         const quantity = parseInt(document.getElementById("quantity").value, 10);
-        const min_threshold = parseInt(document.getElementById("min_threshold").value, 10);
-        addStock({ name, category, quantity, min_threshold });
+        const minThreshold = parseInt(document.getElementById("min-threshold").value, 10);
+
+        addStock({ name, category, quantity, min_threshold: minThreshold });
     };
 }
+
 
 // Add stock
 function addStock(stock) {

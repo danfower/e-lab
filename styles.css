@@ -96,3 +96,34 @@ button:hover {
 #menu button:hover {
     background-color: #7a99a6;
 }
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Adds space between inputs */
+    max-width: 300px; /* Optional: limit the width of the form */
+    margin: 0 auto; /* Center align the form */
+}
+
+form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+form input, form select, form button {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+form button {
+    background-color: #7cd2b3;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #7a99a6;
+}
+
