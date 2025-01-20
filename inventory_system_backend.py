@@ -130,5 +130,11 @@ def filter_stock(category):
     ]
     return jsonify(result), 200
 
+@app.route('/get_categories', methods=['GET'])
+def get_categories():
+    categories = Stock.query.with_entities(Stock.category).distinct().all()
+    category_list = [category[0] for category in categories if category[0]]  # Extract non-empty categories
+    return jsonify(category_list)
+
 if __name__ == '__main__':
     app.run(debug=True)
