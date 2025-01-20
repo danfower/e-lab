@@ -1,21 +1,25 @@
+import os
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
+# Initialize the Flask app
 app = Flask(__name__)
 CORS(app)
 
-# Configure the SQLite database
-import os
+# Configure the database
+database_url = os.getenv('DATABASE_URL')  # Get DATABASE_URL from environment variables
+if not database_url:
+    raise ValueError("DATABASE_URL environment variable not set.")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://")  # Fix for deprecated URL scheme
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('postgresql://inventory_db_72x6_user:KbdDwTLzEwSfgMUkgOfzn02CIMJzWZpq@dpg-cu73emrqf0us73e196hg-a/inventory_db_72x6')
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-
+# Initialize the database
 db = SQLAlchemy(app)
+
 
 # Define the Stock model
 class Stock(db.Model):
@@ -25,9 +29,12 @@ class Stock(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     min_threshold = db.Column(db.Integer, nullable=False)
 
-# Initialize the database within the app context
-with app.app_context():
-    db.create_all()
+
+# Routes
+@app.route('/')
+def home():
+    return "Inventory Management System is running!"
+
 
 # Route to add a new stock item
 @app.route('/add_stock', methods=['POST'])
@@ -42,6 +49,7 @@ def add_stock():
     db.session.add(new_item)
     db.session.commit()
     return jsonify({'message': 'Stock item added successfully!'}), 201
+
 
 # Route to get all stock items
 @app.route('/get_stock', methods=['GET'])
@@ -58,6 +66,7 @@ def get_stock():
     ]
     return jsonify(result), 200
 
+
 # Route to update stock quantity
 @app.route('/update_stock/<int:stock_id>', methods=['PUT'])
 def update_stock(stock_id):
@@ -69,6 +78,7 @@ def update_stock(stock_id):
     stock_item.quantity = data['quantity']
     db.session.commit()
     return jsonify({'message': 'Stock quantity updated successfully!'}), 200
+
 
 # Route to use stock (reduce quantity)
 @app.route('/use_stock/<int:stock_id>', methods=['PUT'])
@@ -93,7 +103,8 @@ def use_stock(stock_id):
     db.session.commit()
     return jsonify({'message': f'{use_quantity} units of {stock_item.name} used successfully!'}), 200
 
-# Route to remove stock item
+
+# Route to remove a stock item
 @app.route('/remove_stock/<int:stock_id>', methods=['DELETE'])
 def remove_stock(stock_id):
     stock_item = Stock.query.get(stock_id)
@@ -104,13 +115,11 @@ def remove_stock(stock_id):
     db.session.commit()
     return jsonify({'message': f'Stock item {stock_item.name} removed successfully!'}), 200
 
-# Route to check low stock and send reminders
+
+# Route to check low stock items
 @app.route('/check_low_stock', methods=['GET'])
 def check_low_stock():
     low_stock_items = Stock.query.filter(Stock.quantity < Stock.min_threshold).all()
-    if low_stock_items:
-        send_email_reminder(low_stock_items)
-    
     result = [
         {
             'id': item.id,
@@ -121,36 +130,6 @@ def check_low_stock():
     ]
     return jsonify(result), 200
 
-# Function to send email reminders
-def send_email_reminder(low_stock_items):
-    sender_email = "your_email@example.com"
-    sender_password = "your_password"
-    recipient_email = "recipient_email@example.com"
-
-    subject = "Low Stock Alert"
-    body = "The following items are below the minimum threshold:\n\n"
-    for item in low_stock_items:
-        body += f"- {item.name}: {item.quantity} remaining (Minimum: {item.min_threshold})\n"
-
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = recipient_email
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    try:
-        with smtplib.SMTP('smtp.example.com', 587) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, recipient_email, msg.as_string())
-        print("Low stock email reminder sent successfully!")
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-
-@app.route('/')
-def home():
-    return "Flask app is running!"
 
 if __name__ == '__main__':
     app.run(debug=True)
