@@ -135,6 +135,15 @@ def get_categories():
     categories = Stock.query.with_entities(Stock.category).distinct().all()
     category_list = [category[0] for category in categories if category[0]]  # Extract non-empty categories
     return jsonify(category_list)
+    
+@app.route('/run_migrations', methods=['GET'])
+def run_migrations():
+    try:
+        db.create_all()  # This will create any missing tables
+        return jsonify({"message": "Database migrations completed successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

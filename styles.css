@@ -157,3 +157,42 @@ form button:hover {
     background-color: #7a99a6;
 }
 
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Add space between fields */
+    max-width: 400px; /* Set a reasonable width for the form */
+    margin: 0 auto; /* Center the form */
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 5px; /* Add a small margin below labels */
+}
+
+input, select, button {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #007BFF; /* Button color */
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker on hover */
+}
+
+h2 {
+    text-align: center;
+}
+
+#content {
+    padding: 20px;
+}
