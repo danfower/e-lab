@@ -30,20 +30,6 @@ class Stock(db.Model):
 def home():
     return "Inventory Management System is running!"
 
-# Add a new stock item
-@app.route('/add_stock', methods=['POST'])
-def add_stock():
-    data = request.get_json()
-    new_item = Stock(
-        name=data['name'],
-        category=data.get('category', ''),
-        quantity=data['quantity'],
-        min_threshold=data['min_threshold']
-    )
-    db.session.add(new_item)
-    db.session.commit()
-    return jsonify({'message': 'Stock item added successfully!'}), 201
-
 # Retrieve all stock items
 @app.route('/get_stock', methods=['GET'])
 def get_stock():
@@ -166,6 +152,32 @@ def search_stock():
         } for item in search_results
     ]
     return jsonify(result), 200
+
+@app.route('/add_stock', methods=['POST'])
+def add_stock():
+    data = request.get_json()
+
+    # Check if a stock item with the same name already exists
+    existing_item = Stock.query.filter_by(name=data['name']).first()
+
+    if existing_item:
+        # Update the existing item's quantity and min_threshold
+        existing_item.quantity += data['quantity']
+        if 'min_threshold' in data:
+            existing_item.min_threshold = data['min_threshold']
+        db.session.commit()
+        return jsonify({'message': f'Stock item "{existing_item.name}" updated successfully!'}), 200
+    else:
+        # Create a new stock item
+        new_item = Stock(
+            name=data['name'],
+            category=data.get('category', ''),
+            quantity=data['quantity'],
+            min_threshold=data['min_threshold']
+        )
+        db.session.add(new_item)
+        db.session.commit()
+        return jsonify({'message': f'Stock item "{new_item.name}" added successfully!'}), 201
 
 
 if __name__ == '__main__':

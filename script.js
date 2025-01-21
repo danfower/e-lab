@@ -80,65 +80,75 @@ function addStock(stock) {
         .catch((error) => console.error("Error:", error));
 }
 
-// Load Stock Dashboard with Search
 function loadStockDashboard() {
     content.innerHTML = `
         <h2>Stock Dashboard</h2>
-        <div id="search-bar">
-            <input type="text" id="search-query" placeholder="Search by name or category">
-            <button onclick="searchStock()">Search</button>
-            <button onclick="loadStockDashboard()">Reset</button>
+        <div>
+            <input type="text" id="search-bar" placeholder="Search stock by name or category" oninput="filterStockDashboard()">
         </div>
-        <div id="stock-list"></div>
+        <div id="stock-items-container">
+            <!-- Stock items will be loaded here dynamically -->
+        </div>
     `;
 
     fetch(`${API_BASE_URL}/get_stock`)
         .then((response) => response.json())
         .then((data) => {
-            displayStockItems(data);
+            const stockItemsContainer = document.getElementById("stock-items-container");
+
+            if (data.length === 0) {
+                stockItemsContainer.innerHTML = "<p>No stock items available.</p>";
+                return;
+            }
+
+            // Store the stock items in a global variable for filtering
+            window.stockItems = data;
+
+            // Render the stock items
+            renderStockItems(data);
         })
         .catch((error) => console.error("Error:", error));
 }
 
-// Display stock items dynamically
-function displayStockItems(data) {
-    const stockList = document.getElementById("stock-list");
-    stockList.innerHTML = ""; // Clear previous content
+function renderStockItems(stockItems) {
+    const stockItemsContainer = document.getElementById("stock-items-container");
+    stockItemsContainer.innerHTML = ""; // Clear previous items
 
-    if (data.length === 0) {
-        stockList.innerHTML = "<p>No stock items available.</p>";
-        return;
-    }
+    stockItems.forEach((item) => {
+        // Calculate traffic light status
+        let statusColor = "green";
+        const minThreshold = item.min_threshold;
+        const quantity = item.quantity;
 
-    data.forEach((item) => {
-        stockList.innerHTML += `
+        if (quantity < minThreshold) {
+            statusColor = "red"; // Below minimum
+        } else if (quantity < minThreshold * 1.2) {
+            statusColor = "yellow"; // Within 20% of minimum
+        }
+
+        // Add the stock item to the container
+        stockItemsContainer.innerHTML += `
             <div class="stock-item">
+                <div class="stock-status-indicator" style="background-color: ${statusColor};"></div>
                 <p><strong>${item.name}</strong></p>
                 <p>Category: ${item.category || "N/A"}</p>
-                <p>Quantity: ${item.quantity}</p>
-                <p>Min Threshold: ${item.min_threshold}</p>
+                <p>Quantity: ${quantity}</p>
+                <p>Min Threshold: ${minThreshold}</p>
                 <button onclick="deleteStock(${item.id})">Delete</button>
             </div>
         `;
     });
 }
 
-// Search stock records
-function searchStock() {
-    const query = document.getElementById("search-query").value.trim();
-    if (!query) {
-        alert("Please enter a search term.");
-        return;
-    }
-
-    fetch(`${API_BASE_URL}/search_stock?query=${encodeURIComponent(query)}`)
-        .then((response) => response.json())
-        .then((data) => {
-            displayStockItems(data);
-        })
-        .catch((error) => console.error("Error:", error));
+function filterStockDashboard() {
+    const searchQuery = document.getElementById("search-bar").value.toLowerCase();
+    const filteredItems = window.stockItems.filter(
+        (item) =>
+            item.name.toLowerCase().includes(searchQuery) ||
+            (item.category && item.category.toLowerCase().includes(searchQuery))
+    );
+    renderStockItems(filteredItems);
 }
-
 
 function showUseStockForm() {
     // Fetch categories first
