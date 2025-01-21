@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
@@ -153,22 +153,28 @@ def search_stock():
     ]
     return jsonify(result), 200
 
+
 @app.route('/add_stock', methods=['POST'])
 def add_stock():
     data = request.get_json()
+
+    # Validate request data
+    if not data or 'name' not in data or 'quantity' not in data or 'min_threshold' not in data:
+        abort(400, description="Missing required fields: 'name', 'quantity', or 'min_threshold'")
+
+    if not isinstance(data['quantity'], int) or not isinstance(data['min_threshold'], int):
+        abort(400, description="'quantity' and 'min_threshold' must be integers")
 
     # Check if a stock item with the same name already exists
     existing_item = Stock.query.filter_by(name=data['name']).first()
 
     if existing_item:
-        # Update the existing item's quantity and min_threshold
         existing_item.quantity += data['quantity']
         if 'min_threshold' in data:
             existing_item.min_threshold = data['min_threshold']
         db.session.commit()
         return jsonify({'message': f'Stock item "{existing_item.name}" updated successfully!'}), 200
     else:
-        # Create a new stock item
         new_item = Stock(
             name=data['name'],
             category=data.get('category', ''),
@@ -178,7 +184,6 @@ def add_stock():
         db.session.add(new_item)
         db.session.commit()
         return jsonify({'message': f'Stock item "{new_item.name}" added successfully!'}), 201
-
 
 if __name__ == '__main__':
     app.run(debug=True)
